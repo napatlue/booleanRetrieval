@@ -251,7 +251,7 @@ public class QryEval {
     }
     */
     
-    for (int i = 0; i < result.docScores.scores.size(); i++) {
+    for (int i = 0; i < result.docScores.scores.size() && i<100; i++) {
       System.out.println(queryName+"\tQ0\t" + 
       getExternalDocid (result.docScores.getDocid(i)) +"\t"+
        (i+1) + "\t"  

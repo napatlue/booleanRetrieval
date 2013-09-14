@@ -34,7 +34,7 @@ public class QryopRankOr extends Qryop {
       // the i'th query argument.
       int rDoc = 0; /* Index of a document in result. */
       int iDoc = 0; /* Index of a document in iResult. */
-
+/*
       while (rDoc < result.docScores.scores.size() && iDoc < iResult.docScores.scores.size()) {
 
         // DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
@@ -67,7 +67,50 @@ public class QryopRankOr extends Qryop {
         result.docScores.scores.add(iResult.docScores.scores.get(iDoc));
         iDoc++;
       }
+  */
+      
+      QryResult tmpResult = new QryResult();
+      while (rDoc < result.docScores.scores.size() && iDoc < iResult.docScores.scores.size()) {
+
+        // DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
+        // Unranked Boolean Or. Add to the incremental result any documents that are not already in the result yet.
+        float rScore = result.docScores.getDocidScore(rDoc); 
+        float iScore = iResult.docScores.getDocidScore(iDoc);
+        if(result.docScores.getDocid(rDoc) == iResult.docScores.getDocid(iDoc))
+        {
+
+          tmpResult.docScores.add(result.docScores.getDocid(rDoc), Math.max(rScore, iScore));
+          rDoc++;
+          iDoc++;
+
+        }
+        else if(result.docScores.getDocid(rDoc) < iResult.docScores.getDocid(iDoc))
+        {
+          tmpResult.docScores.add(result.docScores.getDocid(rDoc),  rScore);
+          rDoc++;
+          
+        }
+        else
+        {
+          tmpResult.docScores.add(iResult.docScores.getDocid(iDoc), iScore);
+          iDoc++;
+        }
         
+      }
+      //add leftover doc from iResult if any
+      while(iDoc < iResult.docScores.scores.size())
+      {
+        tmpResult.docScores.add(iResult.docScores.getDocid(iDoc), iResult.docScores.getDocidScore(iDoc));
+        iDoc++;
+      }
+      //add leftover doc from result if any
+      while(rDoc < result.docScores.scores.size())
+      {
+        tmpResult.docScores.add(result.docScores.getDocid(rDoc), result.docScores.getDocidScore(rDoc));
+        rDoc++;
+      }
+      
+      result = tmpResult;
     }
 
     return result;
