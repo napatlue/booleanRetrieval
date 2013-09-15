@@ -31,6 +31,7 @@ import org.apache.lucene.util.Version;
 
 
 
+
 public class QryEval {
 
   static String usage = "Usage:  java " + System.getProperty("sun.java.command")
@@ -187,6 +188,7 @@ public class QryEval {
   private static void doit(String line, Mode mode, String queryId) {
     // TODO Auto-generated method stub
     TreeNode root = new TreeNode();
+    
     if(line.indexOf("#")<0)
     {
       root.setType(TreeNode.Type.OR);
@@ -194,11 +196,44 @@ public class QryEval {
     root.setChildren(root.MakeChildren(line));
     QryResult result = root.eval(mode);
     try {
-      Collections.sort(result.docScores.scores,new DocScoreComparator());
+      //Collections.sort(result.docScores.scores,new DocScoreComparator());
+      selectTopK(result,100);
       printResults(queryId,result);
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
+    }
+  }
+
+  static private void selectTopK(QryResult list, int k) {
+    // TODO Auto-generated method stub
+    /*
+    for i from 1 to k
+    minIndex = i
+    minValue = list[i]
+    for j from i+1 to n
+        if list[j] < minValue
+            minIndex = j
+            minValue = list[j]
+    swap list[i] and list[minIndex]
+    return list[k]
+    */
+    for(int i=0;i<k && i<list.docScores.scores.size();i++)
+    {
+      int maxIndex = i;
+      ScoreListEntry maxValue = list.docScores.scores.get(i);
+      for(int j = i+1; j < list.docScores.scores.size(); j++)
+      {
+        
+        if(list.docScores.scores.get(j).compareTo(maxValue) > 0)
+        {
+          maxIndex = j;
+          maxValue = list.docScores.scores.get(j);
+        }
+      }
+      ScoreListEntry tmp = maxValue;
+      list.docScores.setScoreEntry(maxIndex, list.docScores.scores.get(i));
+      list.docScores.setScoreEntry(i, tmp);
     }
   }
 
@@ -256,6 +291,11 @@ public class QryEval {
       getExternalDocid (result.docScores.getDocid(i)) +"\t"+
        (i+1) + "\t"  
        + result.docScores.getDocidScore(i) + "\trun_01");
+    }
+    
+    if(result.docScores.scores.isEmpty())
+    {
+      System.out.println(queryName+"\tQ0\tdummy\t1\t0\trun_01");
     }
   }
 

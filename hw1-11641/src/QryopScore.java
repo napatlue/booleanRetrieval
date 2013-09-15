@@ -6,11 +6,13 @@ import java.io.IOException;
 
 public class QryopScore extends Qryop {
 
+  private boolean isRanked;
   /**
    * The SCORE operator accepts just one argument.
    */
-  public QryopScore(Qryop q) {
+  public QryopScore(Qryop q, boolean isRanked) {
     this.args.add(q);
+    this.isRanked = isRanked;
   }
 
   /**
@@ -29,9 +31,10 @@ public class QryopScore extends Qryop {
       // Unranked Boolean. All matching documents get a score of 1.0.
       //result.docScores.add(result.invertedList.postings.get(i).docid, (float) 1.0);
       
-      //For both rank and unrank boolean set score according to tf, unrank will ignore the score
-      //I do this to simplify this class
-      result.docScores.add(result.invertedList.postings.get(i).docid, (float)result.invertedList.postings.get(i).tf);
+      //For unranked mode just assign score 1.0, otherwise assign score equals tf
+      result.docScores.add(result.invertedList.postings.get(i).docid, this.isRanked?
+              (float)result.invertedList.postings.get(i).tf
+              :(float)1.0);
     }
 
     // The SCORE operator should not return a populated inverted list.

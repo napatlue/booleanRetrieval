@@ -24,13 +24,13 @@ public class QryopAnd extends Qryop {
     // invList, depending on the query operator. Wrap a SCORE query operator around it to force it
     // to be a docScores list. There are more efficient ways to do this. This approach is just easy
     // to see and understand.
-    Qryop impliedQryOp = new QryopScore(args.get(0));
+    Qryop impliedQryOp = new QryopScore(args.get(0),false);
     QryResult result = impliedQryOp.evaluate();
 
     // Each pass of the loop evaluates one query argument.
     for (int i = 1; i < args.size(); i++) {
 
-      impliedQryOp = new QryopScore(args.get(i));
+      impliedQryOp = new QryopScore(args.get(i),false);
       QryResult iResult = impliedQryOp.evaluate();
 
       // Use the results of the i'th argument to incrementally compute the query operator.
